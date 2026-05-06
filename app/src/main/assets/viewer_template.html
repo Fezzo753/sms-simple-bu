@@ -62,11 +62,17 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
 .pager button { padding: 4px 10px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; margin: 0 4px; }
 .pager button:disabled { opacity: 0.4; cursor: default; }
 @media (max-width: 800px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .sidebar.show { display: block; position: fixed; inset: 0; z-index: 10; }
+  /* Mobile: contact list IS the home view. Tap a contact to open thread. */
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .sidebar { display: block; grid-column: 1; grid-row: 2; }
+  .main { display: none; }
+  .app.thread-active .sidebar { display: none; }
+  .app.thread-active .main { display: flex; grid-column: 1; grid-row: 2; }
   .header-stats { display: none; }
   .back-btn { display: inline-block; }
+  .header h1 { font-size: 14px; }
+  .toolbar { padding: 8px 12px; }
+  .thread { padding: 12px; }
 }
 </style>
 </head>
@@ -167,7 +173,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
     state.page = 0;
     renderContacts(document.getElementById('search').value);
     renderThread();
-    if (window.innerWidth <= 800) document.getElementById('sidebar').classList.remove('show');
+    document.querySelector('.app').classList.add('thread-active');
   }
 
   function renderThread() {
@@ -259,7 +265,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
     renderThread();
   }));
   document.getElementById('back-btn').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.add('show');
+    document.querySelector('.app').classList.remove('thread-active');
   });
 
   renderContacts('');
