@@ -5,6 +5,7 @@ import android.content.Context
 import android.telephony.TelephonyManager
 import com.simplebackup.app.backup.BackupOrchestrator
 import com.simplebackup.app.backup.Readers
+import com.simplebackup.app.core.Backup
 import com.simplebackup.app.core.normalizeToE164
 import com.simplebackup.app.data.CallReader
 import com.simplebackup.app.data.ContactDiscovery
@@ -41,6 +42,38 @@ class AppContainer(private val app: Application) {
         }
     }
 
+    /**
+     * Regenerate `Backup_<phone>.html` from the canonical `Backup_<phone>.json` if the
+     * HTML is missing, older than the JSON, or carries an old template version. The
+     * sentinel string is stamped into the template's top-level comment; bumping it
+     * forces a refresh on the user's next viewer open after an app upgrade.
+     */
+    fun regenerateHtmlIfStale(devicePhone: String): File? {
+        val jsonFile = File(filesDir, "Backup_${devicePhone}.json")
+        val htmlFile = File(filesDir, "Backup_${devicePhone}.html")
+        if (!jsonFile.exists()) return null
+
+        val needsRegen = !htmlFile.exists() ||
+            htmlFile.lastModified() < jsonFile.lastModified() ||
+            !htmlFile.readText(Charsets.UTF_8).contains(CURRENT_TEMPLATE_SENTINEL)
+
+        if (!needsRegen) return htmlFile
+
+        val backup = runCatching {
+            json.decodeFromString(Backup.serializer(), jsonFile.readText())
+        }.getOrNull() ?: return htmlFile.takeIf { it.exists() }
+
+        val html = htmlGenerator.generate(backup)
+        val tmp = File(filesDir, "${htmlFile.name}.tmp")
+        tmp.writeText(html)
+        if (htmlFile.exists()) htmlFile.delete()
+        if (!tmp.renameTo(htmlFile)) {
+            htmlFile.writeText(html)
+            tmp.delete()
+        }
+        return htmlFile
+    }
+
     fun orchestrator(devicePhone: String, contactNames: Map<String, String?>) = BackupOrchestrator(
         filesDir = filesDir,
         devicePhone = devicePhone,
@@ -53,4 +86,10 @@ class AppContainer(private val app: Application) {
         htmlGenerator = htmlGenerator,
         json = json
     )
+
+    private companion object {
+        // Bump this when the template asset changes so that existing on-device
+        // backup HTMLs get regenerated on the next viewer open.
+        const val CURRENT_TEMPLATE_SENTINEL = "viewer-template-version: 2"
+    }
 }
