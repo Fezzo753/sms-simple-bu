@@ -1,9 +1,3 @@
-# Personal SMS data — never commit
-*.xml
-*.zip
-jay/
-sms_viewer_output/
-
 # Claude Code local state
 .claude/
 
@@ -26,3 +20,5 @@ app/debug/
 # OS
 Thumbs.db
 .DS_Store
+simplebackup.keystore
+simplebackup-keystore-info.txt

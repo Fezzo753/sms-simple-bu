@@ -1,109 +1,64 @@
-# SMS Backup to Offline Viewer
+# SimpleBackup
 
-Converts SMS Backup & Restore XML files into a self-contained, offline HTML viewer.
+A native Android (Kotlin + Jetpack Compose) app that backs up SMS, MMS text bodies, and call-log entries for selected contacts into a single self-viewable HTML file (with a JSON sibling) in the app's private storage. Subsequent runs merge into the same file. The app includes an in-app WebView to view the generated HTML, and a Share button to send the file out.
 
-## Features
+Restore is out of scope.
 
-- **100% Offline** - No internet required, works completely locally
-- **No Installation** - Just double-click to open in any browser
-- **Easy Filtering** - Search by keyword, date range, contact, direction (sent/received)
-- **Export Options** - Print to PDF (via browser) and Export to TXT
-- **Mobile Friendly** - Responsive design works on phones and tablets
-- **Fast** - Data is compressed and loaded efficiently
-
-## Quick Start (Windows)
-
-1. **Install Python** (if not already installed)
-   - Download from: https://www.python.org/downloads/
-   - During installation, CHECK the box "Add Python to PATH"
-
-2. **Prepare your files**
-   - Put these 3 files in the same folder:
-     - `sms_processor.py`
-     - `run_converter.bat`
-     - Your XML backup file (rename it to `sms.xml`)
-
-3. **Run the converter**
-   - Double-click `run_converter.bat`
-   - Wait for processing (may take 1-2 minutes for large files)
-   - The viewer will open automatically when done
-
-4. **Share with your client**
-   - Give them the `sms_viewer_output` folder
-   - They just need to double-click `SMS_Viewer.html`
-
-## Manual Usage (Command Line)
-
-```bash
-python sms_processor.py your_backup.xml [output_folder]
-```
-
-Examples:
-```bash
-python sms_processor.py sms-20250620.xml
-python sms_processor.py sms-20250620.xml ./client_messages
-```
-
-## Output Files
-
-After processing, you'll get:
+## Build
 
 ```
-sms_viewer_output/
-├── SMS_Viewer.html   ← Main viewer (give this to your client)
-└── messages.json     ← Raw data for programmatic access
+./gradlew assembleDebug
 ```
 
-## Using the Viewer
+APK appears at `app/build/outputs/apk/debug/app-debug.apk`.
 
-### Filtering Messages
+For a signed release APK, generate a keystore with `keytool -genkeypair -keystore simplebackup.keystore -alias key0 -keyalg RSA -keysize 2048 -validity 10000` and run:
 
-- **Search**: Type in the search box to find messages containing specific words
-- **Date Range**: Set start and end dates to filter by time period
-- **Direction**: Click "Received" or "Sent" to filter by message direction
-- **Contact**: Click a contact in the sidebar or use the dropdown
+```
+./gradlew assembleRelease \
+  -Pandroid.injected.signing.store.file=$PWD/simplebackup.keystore \
+  -Pandroid.injected.signing.store.password=YOUR_PASS \
+  -Pandroid.injected.signing.key.alias=key0 \
+  -Pandroid.injected.signing.key.password=YOUR_PASS
+```
 
-### Exporting
+## Test
 
-- **Print to PDF**: Click "Print PDF" button → Choose "Save as PDF" in print dialog
-- **Export TXT**: Click "Export TXT" → Downloads a text file with all filtered messages
+```
+./gradlew test
+```
 
-## Troubleshooting
+JVM unit tests cover the pure-Kotlin core: data model + JSON round-trip, phone-number normalization, dedupe + merge, HTML generator, and the backup orchestrator.
 
-### "Python is not installed"
-- Download Python from python.org
-- Make sure to check "Add Python to PATH" during installation
-- Restart your computer after installing
+## Permissions
 
-### "sms.xml not found"
-- Rename your XML backup file to exactly `sms.xml`
-- Make sure it's in the same folder as the scripts
+- `READ_SMS` — SMS and MMS bodies
+- `READ_CALL_LOG` — call entries
+- `READ_CONTACTS` — contact names (the picker still works without this, just shows numbers)
 
-### Viewer is slow or crashes
-- This shouldn't happen with normal backups (even 100k+ messages)
-- If it does, contact me and I can create a chunked/paginated version
+## Project layout
 
-### Messages look garbled
-- The XML file might use a different encoding
-- Try opening the XML in Notepad and re-saving as UTF-8
+```
+app/src/main/java/com/simplebackup/app/
+├── core/         — pure-Kotlin data model, phone normalization, merge
+├── data/         — ContentResolver readers (SMS/MMS/CallLog), Contacts, DataStore
+├── html/         — HTML generator + gzip-base64 compression
+├── backup/       — orchestrator, progress sealed class
+├── ui/           — Compose screens (onboarding, home, picker, viewer, settings)
+│   ├── home/
+│   ├── picker/
+│   ├── viewer/
+│   ├── settings/
+│   ├── onboarding/
+│   ├── permissions/
+│   └── theme/
+├── AppContainer.kt          — manual DI singleton
+└── SimpleBackupApplication.kt
+app/src/main/assets/viewer_template.html — in-app and shared HTML viewer
+```
 
-## Technical Details
+Design and implementation plan live in `docs/plans/`.
 
-- XML is parsed using Python's streaming iterparse (memory efficient)
-- Data is compressed with gzip before embedding (~80% size reduction)
-- Browser decompresses using native DecompressionStream API
-- Pagination prevents rendering too many DOM elements at once
-- Works in Chrome, Firefox, Edge, Safari (any modern browser)
+## Legacy desktop tool
 
-## File Size Expectations
-
-| XML Size | JSON Size | HTML Size | Load Time |
-|----------|-----------|-----------|-----------|
-| 10 MB    | ~2 MB     | ~1 MB     | < 1 sec   |
-| 50 MB    | ~10 MB    | ~5 MB     | 1-2 sec   |
-| 150 MB   | ~30 MB    | ~15 MB    | 3-5 sec   |
-| 500 MB   | ~100 MB   | ~50 MB    | 10-15 sec |
-
----
-
-Created for offline forensic/legal SMS review.
+The original Python desktop converter (`sms_processor.py`) for the SMS Backup & Restore XML format lives in `legacy/`. It's still functional and can be used as a fallback; the new Android app supersedes it for capture-from-device workflows.
