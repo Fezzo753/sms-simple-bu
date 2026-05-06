@@ -20,3 +20,5 @@ app/debug/
 # OS
 Thumbs.db
 .DS_Store
+simplebackup.keystore
+simplebackup-keystore-info.txt
