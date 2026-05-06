@@ -49,7 +49,7 @@ import java.util.Date
 fun HomeScreen(
     onEditContacts: () -> Unit = {},
     onView: () -> Unit = {},
-    onShare: () -> Unit = {},
+    onShare: (String) -> Unit = {},
     onSettings: () -> Unit = {},
     vm: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
 ) {
@@ -166,7 +166,7 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 ) { Text("View") }
                 OutlinedButton(
-                    onClick = onShare,
+                    onClick = { onShare(state.devicePhone) },
                     enabled = state.htmlExists,
                     modifier = Modifier.weight(1f)
                 ) { Text("Share") }

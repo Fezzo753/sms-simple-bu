@@ -32,14 +32,30 @@ class AppContainer(private val app: Application) {
 
     @Suppress("MissingPermission", "HardwareIds", "DEPRECATION")
     fun resolveDevicePhone(override: String?): String {
-        if (!override.isNullOrBlank()) return normalizeToE164(override)
-        return try {
-            val tm = app.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
-            val raw = tm?.line1Number
-            if (!raw.isNullOrBlank()) normalizeToE164(raw) else "+0000000000"
-        } catch (e: SecurityException) {
-            "+0000000000"
+        val raw = if (!override.isNullOrBlank()) {
+            normalizeToE164(override)
+        } else {
+            try {
+                val tm = app.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+                val sim = tm?.line1Number
+                if (!sim.isNullOrBlank()) normalizeToE164(sim) else "+0000000000"
+            } catch (e: SecurityException) {
+                "+0000000000"
+            }
         }
+        return sanitizeForFileName(raw)
+    }
+
+    /**
+     * Strip filesystem-unsafe characters so the resolved phone is always a valid file-name
+     * suffix. `+`, digits, dashes, and underscores survive; everything else (spaces,
+     * slashes, colons, control chars) becomes `_`. Returns `+0000000000` if the result
+     * would be blank — that way [regenerateHtmlIfStale] and the orchestrator never see
+     * an empty `Backup_.html` path.
+     */
+    private fun sanitizeForFileName(s: String): String {
+        val cleaned = s.replace(Regex("[^A-Za-z0-9+_\\-]"), "_").trim('_')
+        return if (cleaned.isBlank()) "+0000000000" else cleaned
     }
 
     /**
@@ -90,6 +106,6 @@ class AppContainer(private val app: Application) {
     private companion object {
         // Bump this when the template asset changes so that existing on-device
         // backup HTMLs get regenerated on the next viewer open.
-        const val CURRENT_TEMPLATE_SENTINEL = "viewer-template-version: 2"
+        const val CURRENT_TEMPLATE_SENTINEL = "viewer-template-version: 3"
     }
 }
