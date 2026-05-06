@@ -60,6 +60,7 @@ private fun AppNavHost(startDestination: String) {
             HomeScreen(
                 onEditContacts = { nav.navigate(Routes.PICKER) },
                 onView = { nav.navigate(Routes.VIEWER) },
+                onShare = { /* wired in Task 18 */ },
                 onSettings = { nav.navigate(Routes.SETTINGS) }
             )
         }
