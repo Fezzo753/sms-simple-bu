@@ -76,6 +76,7 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
                             settings.allowFileAccess = true
                             settings.useWideViewPort = true
                             settings.loadWithOverviewMode = true
+                            settings.domStorageEnabled = true
                             loadUrl("file://${f.absolutePath}")
                         }
                     },
