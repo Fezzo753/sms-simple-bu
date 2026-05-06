@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -56,7 +57,9 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
             container.settings.update {
                 it.copy(phoneOverride = phoneOverride, fromDateMs = parsedFromDate)
             }
-            onDone()
+            // onDone typically calls navController.popBackStack() — that MUST run on the
+            // main thread. Crash bug if invoked from the IO dispatcher.
+            withContext(Dispatchers.Main) { onDone() }
         }
 
     fun reset() = viewModelScope.launch(Dispatchers.IO) {

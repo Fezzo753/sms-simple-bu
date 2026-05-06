@@ -174,6 +174,34 @@ class ViewerTemplateTest {
         assertThat(template).contains("display: none !important")
     }
 
+    // ---- Native bridge for print + export ----
+
+    @Test fun `template detects AndroidBridge before calling browser fallbacks`() {
+        // Android WebView doesn't implement window.print() or <a download>, so the page
+        // checks for the native bridge first and only falls through to the browser APIs
+        // when running outside the app.
+        assertThat(template).contains("function isInApp()")
+        assertThat(template).contains("window.AndroidBridge")
+        assertThat(template).contains("typeof window.AndroidBridge.print === 'function'")
+    }
+
+    @Test fun `print button delegates to bridge when in app`() {
+        // The shared doPrint() handler must check isInApp() before window.print().
+        assertThat(template).contains("function doPrint()")
+        assertThat(template).contains("window.AndroidBridge.print()")
+        // Both desktop and mobile print buttons share the same handler.
+        assertThat(template).contains("'btn-print'")
+        assertThat(template).contains("'btn-print-mobile'")
+    }
+
+    @Test fun `export TXT delegates to bridge when in app`() {
+        // exportTxt() must call AndroidBridge.exportTxt(content, filename) before falling
+        // back to the browser <a download> path.
+        assertThat(template).contains("window.AndroidBridge.exportTxt(content, filename)")
+        // Browser fallback must remain in place for the desktop / shared-file case.
+        assertThat(template).contains("a.download = filename")
+    }
+
     private fun mobileMediaQueryBlock(): String {
         val start = template.indexOf("@media (max-width: 800px)")
         check(start >= 0) { "no mobile media query in template" }

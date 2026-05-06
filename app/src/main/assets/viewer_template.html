@@ -460,8 +460,18 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
     return div;
   }
 
-  // ----- Export TXT -----
-  function exportTxt() {
+  // ----- Print + Export TXT -----
+  // Detect the in-app bridge. Android WebView does not implement window.print()
+  // or <a download>, so when AndroidBridge is present we hand off to the native
+  // PrintManager / ACTION_SEND chooser. Outside the app (desktop browser, share
+  // recipient opening the file), the bridge is absent and the browser-native
+  // paths are used instead.
+  function isInApp() {
+    return typeof window.AndroidBridge !== 'undefined'
+      && typeof window.AndroidBridge.print === 'function';
+  }
+
+  function buildExportText() {
     const events = currentlyFiltered();
     const lines = [];
     lines.push('SimpleBackup export — ' + new Date().toISOString());
@@ -488,13 +498,36 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
       }
       lines.push('');
     }
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    return lines.join('\n');
+  }
+
+  function exportFilename() {
+    return 'backup-export-' + new Date().toISOString().slice(0, 10) + '.txt';
+  }
+
+  function exportTxt() {
+    const content = buildExportText();
+    const filename = exportFilename();
+    if (isInApp()) {
+      window.AndroidBridge.exportTxt(content, filename);
+      return;
+    }
+    // Browser fallback: trigger a download via <a download>.
+    const blob = new Blob([content], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'backup-export-' + new Date().toISOString().slice(0, 10) + '.txt';
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 0);
+  }
+
+  function doPrint() {
+    if (isInApp()) {
+      window.AndroidBridge.print();
+      return;
+    }
+    window.print();
   }
 
   // ----- Wire up -----
@@ -542,8 +575,8 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
   document.getElementById('back-btn').addEventListener('click', () => {
     document.querySelector('.app').classList.remove('thread-active');
   });
-  document.getElementById('btn-print').addEventListener('click', () => window.print());
-  document.getElementById('btn-print-mobile').addEventListener('click', () => window.print());
+  document.getElementById('btn-print').addEventListener('click', doPrint);
+  document.getElementById('btn-print-mobile').addEventListener('click', doPrint);
   document.getElementById('btn-export').addEventListener('click', exportTxt);
   document.getElementById('btn-export-mobile').addEventListener('click', exportTxt);
 

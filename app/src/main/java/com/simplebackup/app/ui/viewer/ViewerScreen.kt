@@ -1,5 +1,6 @@
 package com.simplebackup.app.ui.viewer
 
+import android.app.Activity
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
@@ -78,7 +79,9 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
             if (f != null) {
                 AndroidView(
                     factory = { ctx ->
+                        var webViewHolder: WebView? = null
                         WebView(ctx).apply {
+                            webViewHolder = this
                             // Explicit MATCH_PARENT so the WebView's height is unambiguous —
                             // without this, some configurations leave 100vh / 100% resolving
                             // to 0, which collapses the inner grid layout.
@@ -118,7 +121,22 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
                                     )
                                 }
                             }
-                            loadUrl("file://${f.absolutePath}")
+                            // Bridge for Print + Export TXT — WebView doesn't implement
+                            // window.print() or <a download>, so the page calls these methods
+                            // on `window.AndroidBridge` when it detects the bridge.
+                            (ctx as? Activity)?.let { activity ->
+                                addJavascriptInterface(
+                                    WebViewBridge(
+                                        activity = activity,
+                                        webViewRef = { webViewHolder },
+                                        cacheDir = activity.cacheDir,
+                                        authority = "${activity.packageName}.fileprovider"
+                                    ),
+                                    WebViewBridge.NAME
+                                )
+                            }
+                            // Use toURI() so paths with `+` or spaces are URL-encoded properly.
+                            loadUrl(f.toURI().toString())
                         }
                     },
                     modifier = Modifier.fillMaxSize()
