@@ -1,0 +1,28 @@
+# Personal SMS data — never commit
+*.xml
+*.zip
+jay/
+sms_viewer_output/
+
+# Claude Code local state
+.claude/
+
+# Android (for upcoming app)
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+.cxx/
+app/release/
+app/debug/
+*.apk
+*.aab
+*.keystore
+*.jks
+.kotlin/
+
+# OS
+Thumbs.db
+.DS_Store
