@@ -36,11 +36,11 @@ class ViewerTemplateTest {
         // otherwise the contact list becomes unreachable on phones.
         val mobileBlock = mobileMediaQueryBlock()
         // Find the rule for the BARE `.sidebar` selector (not `.app.thread-active .sidebar`).
-        // That rule's body must set display: block, not none.
+        // That rule's body must set display to a visible value (block or flex), not none.
         val bareSidebarRule = Regex("""(^|\n)\s*\.sidebar\s*\{[^}]*}""")
             .find(mobileBlock)?.value
             ?: error("no bare .sidebar rule in mobile media query")
-        assertThat(bareSidebarRule).contains("display: block")
+        assertThat(bareSidebarRule).containsMatch("""display:\s*(block|flex)""")
         assertThat(bareSidebarRule).doesNotContain("display: none")
     }
 
@@ -51,7 +51,7 @@ class ViewerTemplateTest {
         assertThat(mobileBlock).contains(".app.thread-active .sidebar { display: none")
     }
 
-    @Test fun `selectContact toggles thread-active on app container`() {
+    @Test fun `view-thread button toggles thread-active on app container`() {
         assertThat(template).contains("classList.add('thread-active')")
     }
 
@@ -67,10 +67,81 @@ class ViewerTemplateTest {
         assertThat(template).doesNotContain(".sidebar.show")
     }
 
-    @Test fun `filter chips are present in toolbar`() {
+    @Test fun `kind filter chips are present in toolbar`() {
         assertThat(template).contains("data-kind=\"all\"")
         assertThat(template).contains("data-kind=\"sms\"")
         assertThat(template).contains("data-kind=\"call\"")
+    }
+
+    // ---- Multi-contact selection ----
+
+    @Test fun `default selection is all contacts`() {
+        // Initialization must populate selectedAddrs with every contact key.
+        assertThat(template).contains("for (const addr of Object.keys(state.backup.contacts || {})) {")
+        assertThat(template).contains("state.selectedAddrs.add(addr);")
+    }
+
+    @Test fun `each contact row renders a checkbox`() {
+        // The contact-row builder creates an input[type=checkbox] for each contact.
+        assertThat(template).contains("cb.type = 'checkbox'")
+        assertThat(template).contains("toggleSelect(c.addr, cb.checked)")
+    }
+
+    @Test fun `select all and clear all controls present`() {
+        assertThat(template).contains("id=\"btn-select-all\"")
+        assertThat(template).contains("id=\"btn-clear-all\"")
+        assertThat(template).contains("function selectAll()")
+        assertThat(template).contains("function clearAll()")
+    }
+
+    @Test fun `view thread button on mobile sidebar`() {
+        assertThat(template).contains("id=\"btn-view-thread\"")
+        // Sidebar footer is mobile-only (display: none default, display: block at narrow).
+        val mobileBlock = mobileMediaQueryBlock()
+        assertThat(mobileBlock).contains(".sidebar-footer { display: block")
+    }
+
+    @Test fun `thread filter checks selectedAddrs membership`() {
+        // The currentlyFiltered() function must filter by selectedAddrs.has(e.addr).
+        assertThat(template).contains("state.selectedAddrs.has(e.addr)")
+    }
+
+    // ---- Filter toolbar (Row 2) ----
+
+    @Test fun `direction filter has all received and sent buttons`() {
+        assertThat(template).contains("data-dir=\"all\"")
+        assertThat(template).contains("data-dir=\"in\"")
+        assertThat(template).contains("data-dir=\"out\"")
+    }
+
+    @Test fun `date range inputs are present`() {
+        assertThat(template).contains("id=\"date-from\"")
+        assertThat(template).contains("id=\"date-to\"")
+    }
+
+    @Test fun `body search input is present`() {
+        assertThat(template).contains("id=\"search-body\"")
+        // Search text must be applied against e.body in the filter pipeline.
+        assertThat(template).contains("(e.body || '').toLowerCase().includes(state.bodySearch)")
+    }
+
+    @Test fun `print button triggers window print`() {
+        assertThat(template).contains("id=\"btn-print\"")
+        assertThat(template).contains("window.print()")
+    }
+
+    @Test fun `export TXT button generates download blob`() {
+        assertThat(template).contains("id=\"btn-export\"")
+        assertThat(template).contains("function exportTxt()")
+        assertThat(template).contains("new Blob([")
+        assertThat(template).contains("type: 'text/plain'")
+    }
+
+    @Test fun `print stylesheet hides chrome`() {
+        // @media print rule must hide sidebar/toolbar so the printed page is just the thread.
+        assertThat(template).contains("@media print")
+        // The print rule uses !important to override the desktop layout — only used here.
+        assertThat(template).contains("display: none !important")
     }
 
     private fun mobileMediaQueryBlock(): String {
