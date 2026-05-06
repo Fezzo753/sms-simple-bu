@@ -3,6 +3,7 @@ package com.simplebackup.app.backup
 import com.simplebackup.app.core.Backup
 import com.simplebackup.app.core.Event
 import com.simplebackup.app.core.merge
+import com.simplebackup.app.data.ProgressUpdater
 import com.simplebackup.app.html.HtmlGenerator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,9 +13,9 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 class Readers(
-    val sms: (Set<String>) -> Sequence<Event.Sms>,
-    val mms: (Set<String>) -> Sequence<Event.Mms>,
-    val calls: (Set<String>) -> Sequence<Event.Call>
+    val sms: (Set<String>, ProgressUpdater) -> Sequence<Event.Sms>,
+    val mms: (Set<String>, ProgressUpdater) -> Sequence<Event.Mms>,
+    val calls: (Set<String>, ProgressUpdater) -> Sequence<Event.Call>
 )
 
 class BackupOrchestrator(
@@ -37,17 +38,15 @@ class BackupOrchestrator(
         val existingMessageCount = existing?.events?.count { it is Event.Sms || it is Event.Mms } ?: 0
         val existingCallCount = existing?.events?.count { it is Event.Call } ?: 0
 
-        _progress.value = BackupProgress.Running(BackupProgress.Phase.SMS, 0, null)
-        yield()
-        val smsList = readers.sms(addresses).toList()
-
-        _progress.value = BackupProgress.Running(BackupProgress.Phase.MMS, 0, null)
-        yield()
-        val mmsList = readers.mms(addresses).toList()
-
-        _progress.value = BackupProgress.Running(BackupProgress.Phase.CALLS, 0, null)
-        yield()
-        val callList = readers.calls(addresses).toList()
+        val smsList = runPhase(BackupProgress.Phase.SMS) { onProgress ->
+            readers.sms(addresses, onProgress).toList()
+        }
+        val mmsList = runPhase(BackupProgress.Phase.MMS) { onProgress ->
+            readers.mms(addresses, onProgress).toList()
+        }
+        val callList = runPhase(BackupProgress.Phase.CALLS) { onProgress ->
+            readers.calls(addresses, onProgress).toList()
+        }
 
         _progress.value = BackupProgress.Running(BackupProgress.Phase.MERGE, 0, null)
         yield()
@@ -70,6 +69,18 @@ class BackupOrchestrator(
         _progress.value = BackupProgress.Failed(e.message ?: e::class.simpleName ?: "Unknown error")
     }
 
+    private suspend inline fun <T> runPhase(
+        phase: BackupProgress.Phase,
+        block: (ProgressUpdater) -> T
+    ): T {
+        _progress.value = BackupProgress.Running(phase, 0, null)
+        yield()
+        val updater: ProgressUpdater = { current, total ->
+            _progress.value = BackupProgress.Running(phase, current, total.takeIf { it > 0 })
+        }
+        return block(updater)
+    }
+
     private fun loadExisting(): Backup? {
         val f = jsonFile()
         if (!f.exists()) return null
@@ -82,7 +93,6 @@ class BackupOrchestrator(
         tmp.writeText(content)
         if (target.exists()) target.delete()
         if (!tmp.renameTo(target)) {
-            // Fallback: copy then delete
             target.writeText(content)
             tmp.delete()
         }

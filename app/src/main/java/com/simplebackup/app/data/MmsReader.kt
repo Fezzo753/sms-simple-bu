@@ -7,7 +7,12 @@ import com.simplebackup.app.core.Event
 import com.simplebackup.app.core.normalizeToE164
 
 class MmsReader(private val resolver: ContentResolver) {
-    fun read(addresses: Set<String>): Sequence<Event.Mms> = sequence {
+
+    fun read(
+        addresses: Set<String>,
+        onProgress: ProgressUpdater = NoopProgress
+    ): Sequence<Event.Mms> = sequence {
+        val rows = ArrayList<MmsRow>()
         resolver.query(
             Mms.CONTENT_URI,
             arrayOf(Mms._ID, Mms.DATE, Mms.MESSAGE_BOX, Mms.READ),
@@ -18,30 +23,86 @@ class MmsReader(private val resolver: ContentResolver) {
             val ti = c.getColumnIndexOrThrow(Mms.MESSAGE_BOX)
             val ri = c.getColumnIndexOrThrow(Mms.READ)
             while (c.moveToNext()) {
-                val id = c.getLong(idi)
-                val addr = readAddress(id) ?: continue
-                val e164 = normalizeToE164(addr)
-                if (addresses.isNotEmpty() && e164 !in addresses) continue
-                val (body, parts) = readBodyAndParts(id)
-                yield(
-                    Event.Mms(
-                        addr = e164,
-                        date = c.getLong(di) * 1000,
-                        type = c.getInt(ti),
-                        body = body,
-                        read = c.getInt(ri) == 1,
-                        parts = parts
-                    )
+                rows += MmsRow(
+                    id = c.getLong(idi),
+                    dateSec = c.getLong(di),
+                    type = c.getInt(ti),
+                    read = c.getInt(ri) == 1
                 )
             }
         }
+
+        val total = rows.size
+        if (total == 0) {
+            onProgress(0, 0)
+            return@sequence
+        }
+
+        val addressById = readAllAddresses(rows.map { it.id })
+
+        for ((idx, row) in rows.withIndex()) {
+            if (idx % 25 == 0) onProgress(idx, total)
+            val raw = addressById[row.id] ?: continue
+            val e164 = normalizeToE164(raw)
+            if (addresses.isNotEmpty() && e164 !in addresses) continue
+            val (body, parts) = readBodyAndParts(row.id)
+            yield(
+                Event.Mms(
+                    addr = e164,
+                    date = row.dateSec * 1000,
+                    type = row.type,
+                    body = body,
+                    read = row.read,
+                    parts = parts
+                )
+            )
+        }
+        onProgress(total, total)
     }
 
-    private fun readAddress(mmsId: Long): String? {
-        val uri = Uri.parse("content://mms/$mmsId/addr")
-        resolver.query(uri, arrayOf("address", "type"), "type=137", null, null)?.use {
-            if (it.moveToFirst()) return it.getString(0)
+    private fun readAllAddresses(mmsIds: List<Long>): Map<Long, String> {
+        if (mmsIds.isEmpty()) return emptyMap()
+        val map = HashMap<Long, String>(mmsIds.size)
+
+        mmsIds.chunked(450).forEach { chunk ->
+            val batched = runCatching {
+                val placeholders = chunk.joinToString(",") { "?" }
+                val args = chunk.map { it.toString() }.toTypedArray()
+                resolver.query(
+                    Uri.parse("content://mms/addr"),
+                    arrayOf("msg_id", "address"),
+                    "type=$FROM_TYPE AND msg_id IN ($placeholders)",
+                    args, null
+                )?.use { c ->
+                    while (c.moveToNext()) {
+                        val id = c.getLong(0)
+                        val addr = c.getString(1) ?: continue
+                        map.putIfAbsent(id, addr)
+                    }
+                }
+                true
+            }.getOrDefault(false)
+
+            if (!batched) {
+                chunk.forEach { id ->
+                    if (id !in map) {
+                        val a = readAddressOne(id)
+                        if (a != null) map[id] = a
+                    }
+                }
+            }
         }
+        return map
+    }
+
+    private fun readAddressOne(mmsId: Long): String? {
+        val uri = Uri.parse("content://mms/$mmsId/addr")
+        resolver.query(
+            uri,
+            arrayOf("address"),
+            "type=$FROM_TYPE",
+            null, null
+        )?.use { if (it.moveToFirst()) return it.getString(0) }
         return null
     }
 
@@ -67,7 +128,13 @@ class MmsReader(private val resolver: ContentResolver) {
         return sb.toString() to parts
     }
 
+    private data class MmsRow(val id: Long, val dateSec: Long, val type: Int, val read: Boolean)
+
     private companion object {
-        val MEDIA_TYPES = setOf("image/jpeg", "image/png", "image/gif", "video/mp4", "audio/amr", "audio/mp4")
+        const val FROM_TYPE = 137
+        val MEDIA_TYPES = setOf(
+            "image/jpeg", "image/png", "image/gif",
+            "video/mp4", "audio/amr", "audio/mp4"
+        )
     }
 }

@@ -26,9 +26,9 @@ class BackupOrchestratorTest {
         filesDir = dir,
         devicePhone = "+15551234567",
         readers = Readers(
-            sms = { sms.asSequence() },
-            mms = { mms.asSequence() },
-            calls = { calls.asSequence() }
+            sms = { _, _ -> sms.asSequence() },
+            mms = { _, _ -> mms.asSequence() },
+            calls = { _, _ -> calls.asSequence() }
         ),
         contactNames = contactNames,
         htmlGenerator = htmlGen,
@@ -90,9 +90,9 @@ class BackupOrchestratorTest {
             filesDir = dir,
             devicePhone = "+15551234567",
             readers = Readers(
-                sms = { throw RuntimeException("boom") },
-                mms = { emptySequence() },
-                calls = { emptySequence() }
+                sms = { _, _ -> throw RuntimeException("boom") },
+                mms = { _, _ -> emptySequence() },
+                calls = { _, _ -> emptySequence() }
             ),
             contactNames = emptyMap(),
             htmlGenerator = htmlGen,
@@ -101,5 +101,33 @@ class BackupOrchestratorTest {
         val result = orch.run(emptySet())
         assertThat(result.isFailure).isTrue()
         assertThat(orch.progress.value).isInstanceOf(BackupProgress.Failed::class.java)
+    }
+
+    @Test fun `progress total propagates from reader updates`(@TempDir dir: File) = runTest {
+        val orch = BackupOrchestrator(
+            filesDir = dir,
+            devicePhone = "+15551234567",
+            readers = Readers(
+                sms = { _, onProgress ->
+                    onProgress(0, 100)
+                    onProgress(50, 100)
+                    onProgress(100, 100)
+                    emptySequence()
+                },
+                mms = { _, onProgress ->
+                    onProgress(0, 0)
+                    emptySequence()
+                },
+                calls = { _, onProgress ->
+                    onProgress(0, 0)
+                    emptySequence()
+                }
+            ),
+            contactNames = emptyMap(),
+            htmlGenerator = htmlGen,
+            json = json
+        )
+        orch.run(emptySet())
+        assertThat(orch.progress.value).isInstanceOf(BackupProgress.Done::class.java)
     }
 }
