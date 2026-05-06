@@ -26,27 +26,50 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
 .header h1 { margin: 0; font-size: 16px; font-weight: 600; flex: 1; }
 .header-stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-dim); }
 .header-stats span strong { color: var(--text); }
-.sidebar { background: var(--bg-panel); border-right: 1px solid var(--border); overflow-y: auto; }
+.header-actions { display: flex; gap: 6px; }
+.header-actions button, .pill-btn { padding: 4px 12px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; font-size: 12px; }
+.header-actions button:hover, .pill-btn:hover { background: var(--border); }
+.sidebar { background: var(--bg-panel); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
 .sidebar-search { padding: 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-panel); z-index: 2; }
 .sidebar-search input { width: 100%; padding: 8px 10px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+.bulk-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--text-dim); }
+.bulk-row button { padding: 3px 8px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 4px; color: var(--text); cursor: pointer; font-size: 11px; }
+.bulk-row .selection-count { margin-left: auto; }
+#contact-list { flex: 1; }
 .contact-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
 .contact-row:hover { background: var(--bg-elev); }
-.contact-row.active { background: var(--bg-elev); border-left: 3px solid var(--accent); padding-left: 11px; }
-.contact-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-elev); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--accent); flex-shrink: 0; }
+.contact-row.checked { background: rgba(88, 166, 255, 0.06); }
+.contact-row input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+.contact-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-elev); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--accent); flex-shrink: 0; font-size: 12px; }
 .contact-info { flex: 1; min-width: 0; }
 .contact-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.contact-meta { font-size: 11px; color: var(--text-dim); }
+.contact-meta { font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-footer { display: none; padding: 12px; border-top: 1px solid var(--border); background: var(--bg-panel); position: sticky; bottom: 0; }
+.sidebar-footer button { width: 100%; padding: 10px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+.sidebar-footer button:disabled { opacity: 0.4; cursor: default; }
 .main { display: flex; flex-direction: column; overflow: hidden; }
-.toolbar { padding: 10px 18px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center; background: var(--bg-panel); }
+.toolbar { padding: 10px 18px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center; background: var(--bg-panel); flex-wrap: wrap; }
 .back-btn { display: none; padding: 4px 10px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; }
 .filter-chips { display: flex; gap: 8px; }
 .chip { padding: 5px 12px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim); cursor: pointer; font-size: 12px; }
 .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.filter-toggle { margin-left: auto; padding: 4px 10px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; font-size: 12px; }
+.filter-panel { display: none; padding: 10px 18px; background: var(--bg-panel); border-bottom: 1px solid var(--border); flex-direction: column; gap: 8px; }
+.filter-panel.show { display: flex; }
+.filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--text-dim); }
+.filter-row label { font-weight: 500; }
+.dir-btn { padding: 4px 10px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text-dim); cursor: pointer; font-size: 12px; }
+.dir-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.filter-panel input[type="date"], .filter-panel input[type="search"] { padding: 4px 8px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12px; }
+.filter-panel input[type="search"] { flex: 1; min-width: 180px; }
+.filter-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .thread { flex: 1; overflow-y: auto; padding: 18px; }
 .thread-empty { color: var(--text-dim); text-align: center; margin-top: 80px; }
 .day-divider { text-align: center; margin: 18px 0 10px; color: var(--text-dim); font-size: 11px; }
-.message { display: flex; margin-bottom: 6px; }
-.message.sent { justify-content: flex-end; }
+.message { display: flex; flex-direction: column; margin-bottom: 6px; }
+.message.sent { align-items: flex-end; }
+.message.received { align-items: flex-start; }
+.contact-tag { font-size: 10px; color: var(--text-dim); margin-bottom: 2px; padding: 0 4px; }
 .bubble { max-width: 70%; padding: 8px 12px; border-radius: 14px; word-wrap: break-word; white-space: pre-wrap; }
 .message.received .bubble { background: var(--bubble-recv); border-top-left-radius: 4px; }
 .message.sent .bubble { background: var(--bubble-sent); border-top-right-radius: 4px; }
@@ -61,18 +84,35 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
 .pager { padding: 10px; text-align: center; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 12px; }
 .pager button { padding: 4px 10px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; margin: 0 4px; }
 .pager button:disabled { opacity: 0.4; cursor: default; }
+.thread-meta { padding: 6px 18px; font-size: 11px; color: var(--text-dim); background: var(--bg-panel); border-bottom: 1px solid var(--border); }
+
 @media (max-width: 800px) {
   /* Mobile: contact list IS the home view. Tap a contact to open thread. */
   .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .sidebar { display: block; grid-column: 1; grid-row: 2; }
+  .sidebar { display: flex; grid-column: 1; grid-row: 2; }
   .main { display: none; }
   .app.thread-active .sidebar { display: none; }
   .app.thread-active .main { display: flex; grid-column: 1; grid-row: 2; }
-  .header-stats { display: none; }
+  .header-stats, .header-actions { display: none; }
   .back-btn { display: inline-block; }
   .header h1 { font-size: 14px; }
   .toolbar { padding: 8px 12px; }
   .thread { padding: 12px; }
+  .sidebar-footer { display: block; }
+  .filter-panel { padding: 10px 12px; }
+}
+
+@media print {
+  .sidebar, .toolbar, .filter-panel, .pager, .header-actions, .thread-meta { display: none !important; }
+  .app { display: block; height: auto; }
+  .header { border-bottom: 2px solid #000; }
+  .main, .thread { display: block; overflow: visible; height: auto; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .bubble { border: 1px solid #ccc; max-width: 100%; }
+  .message.sent .bubble { background: #e7f0ff; color: #000; }
+  .message.received .bubble { background: #f0f0f0; color: #000; }
+  .call-entry { color: #000; border-color: #888; }
+  .day-divider { color: #000; font-weight: 600; }
 }
 </style>
 </head>
@@ -86,12 +126,24 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
       <span>Contacts: <strong>{{STATS_CONTACTS}}</strong></span>
       <span>Period: <strong>{{STATS_PERIOD}}</strong></span>
     </div>
+    <div class="header-actions">
+      <button id="btn-print">Print</button>
+      <button id="btn-export">Export TXT</button>
+    </div>
   </div>
   <div class="sidebar" id="sidebar">
     <div class="sidebar-search">
-      <input id="search" type="search" placeholder="Search contacts...">
+      <input id="search-contacts" type="search" placeholder="Filter contacts...">
+      <div class="bulk-row">
+        <button id="btn-select-all">Select all</button>
+        <button id="btn-clear-all">Clear</button>
+        <span class="selection-count" id="selection-count"></span>
+      </div>
     </div>
     <div id="contact-list"></div>
+    <div class="sidebar-footer">
+      <button id="btn-view-thread">View thread</button>
+    </div>
   </div>
   <div class="main">
     <div class="toolbar">
@@ -101,9 +153,31 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
         <button class="chip" data-kind="sms">Messages</button>
         <button class="chip" data-kind="call">Calls</button>
       </div>
+      <button class="filter-toggle" id="filter-toggle">More filters ▾</button>
     </div>
+    <div class="filter-panel" id="filter-panel">
+      <div class="filter-row">
+        <label>Direction:</label>
+        <button class="dir-btn active" data-dir="all">All</button>
+        <button class="dir-btn" data-dir="in">Received</button>
+        <button class="dir-btn" data-dir="out">Sent</button>
+      </div>
+      <div class="filter-row">
+        <label>From:</label><input type="date" id="date-from">
+        <label>To:</label><input type="date" id="date-to">
+        <button id="btn-clear-dates" class="pill-btn">Clear dates</button>
+      </div>
+      <div class="filter-row">
+        <input type="search" id="search-body" placeholder="Search message bodies...">
+      </div>
+      <div class="filter-row filter-actions" id="filter-actions-mobile">
+        <button id="btn-print-mobile" class="pill-btn">Print</button>
+        <button id="btn-export-mobile" class="pill-btn">Export TXT</button>
+      </div>
+    </div>
+    <div class="thread-meta" id="thread-meta"></div>
     <div class="thread" id="thread">
-      <div class="thread-empty">Select a contact to view their thread.</div>
+      <div class="thread-empty">Loading...</div>
     </div>
     <div class="pager" id="pager" style="display: none;"></div>
   </div>
@@ -111,10 +185,20 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
 <script id="payload" type="application/octet-stream">{{PAYLOAD}}</script>
 <script>
 (async function() {
-  const PAGE_SIZE_MSG = 500;
-  const PAGE_SIZE_CALL = 1000;
-  const state = { backup: null, currentAddr: null, filter: 'all', page: 0 };
+  const PAGE_SIZE = 500;
+  const state = {
+    backup: null,
+    selectedAddrs: new Set(),
+    kindFilter: 'all',
+    directionFilter: 'all',
+    dateFrom: null,  // ms (start of day)
+    dateTo: null,    // ms (end of day)
+    bodySearch: '',
+    page: 0,
+    countsByAddr: new Map()
+  };
 
+  // Decompress embedded payload.
   const payloadEl = document.getElementById('payload');
   const b64 = payloadEl.textContent.trim();
   const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
@@ -122,14 +206,26 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
   const text = await new Response(stream).text();
   state.backup = JSON.parse(text);
 
+  // Compute per-contact event counts once.
+  for (const e of state.backup.events || []) {
+    state.countsByAddr.set(e.addr, (state.countsByAddr.get(e.addr) || 0) + 1);
+  }
+  // Default: all contacts selected.
+  for (const addr of Object.keys(state.backup.contacts || {})) {
+    state.selectedAddrs.add(addr);
+  }
+
+  // ----- Helpers -----
+  function escapeHtml(s) {
+    return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
   function initials(name) {
     if (!name) return '#';
     return name.trim().split(/\s+/).slice(0, 2).map(s => s[0].toUpperCase()).join('');
   }
-  function fmtDate(ms) {
-    const d = new Date(ms);
-    return d.toLocaleString();
-  }
+  function fmtDate(ms) { return new Date(ms).toLocaleString(); }
   function fmtDay(ms) {
     return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   }
@@ -143,58 +239,139 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
   function callKind(type) {
     return ({ 1: 'incoming', 2: 'outgoing', 3: 'missed', 5: 'rejected', 6: 'blocked' }[type]) || 'incoming';
   }
+  function nameFor(addr) {
+    const c = (state.backup.contacts || {})[addr];
+    return (c && c.name) ? c.name : addr;
+  }
+  function isSent(e) { return e.type === 2; }
 
-  function renderContacts(query) {
-    const q = (query || '').toLowerCase();
+  // ----- Sidebar contact list -----
+  function renderContacts() {
+    const q = (document.getElementById('search-contacts').value || '').toLowerCase();
     const list = document.getElementById('contact-list');
     list.innerHTML = '';
     const entries = Object.entries(state.backup.contacts || {})
-      .map(([addr, info]) => ({ addr, info }))
+      .map(([addr, info]) => ({ addr, info, count: state.countsByAddr.get(addr) || 0 }))
       .filter(c => {
         if (!q) return true;
         return (c.info.name || '').toLowerCase().includes(q) || c.addr.includes(q);
       })
       .sort((a, b) => (a.info.name || a.addr).localeCompare(b.info.name || b.addr));
+
     for (const c of entries) {
+      const checked = state.selectedAddrs.has(c.addr);
       const row = document.createElement('div');
-      row.className = 'contact-row' + (c.addr === state.currentAddr ? ' active' : '');
-      row.innerHTML = '<div class="contact-avatar">' + initials(c.info.name || c.addr) + '</div>' +
-        '<div class="contact-info">' +
-          '<div class="contact-name">' + (c.info.name || c.addr) + '</div>' +
-          '<div class="contact-meta">' + (c.info.name ? c.addr : '') + '</div>' +
-        '</div>';
-      row.onclick = () => selectContact(c.addr);
+      row.className = 'contact-row' + (checked ? ' checked' : '');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = checked;
+      cb.setAttribute('data-addr', c.addr);
+      cb.onclick = (ev) => ev.stopPropagation();
+      cb.onchange = () => toggleSelect(c.addr, cb.checked);
+      row.appendChild(cb);
+
+      const av = document.createElement('div');
+      av.className = 'contact-avatar';
+      av.textContent = initials(c.info.name || c.addr);
+      row.appendChild(av);
+
+      const info = document.createElement('div');
+      info.className = 'contact-info';
+      info.innerHTML = '<div class="contact-name">' + escapeHtml(c.info.name || c.addr) + '</div>' +
+        '<div class="contact-meta">' + escapeHtml(c.info.name ? c.addr + ' · ' : '') + c.count + ' events</div>';
+      row.appendChild(info);
+
+      row.onclick = () => { cb.checked = !cb.checked; toggleSelect(c.addr, cb.checked); };
       list.appendChild(row);
     }
+    updateSelectionCount();
   }
 
-  function selectContact(addr) {
-    state.currentAddr = addr;
+  function toggleSelect(addr, checked) {
+    if (checked) state.selectedAddrs.add(addr); else state.selectedAddrs.delete(addr);
+    renderContacts();
     state.page = 0;
-    renderContacts(document.getElementById('search').value);
     renderThread();
-    document.querySelector('.app').classList.add('thread-active');
+  }
+  function selectAll() {
+    for (const addr of Object.keys(state.backup.contacts || {})) state.selectedAddrs.add(addr);
+    renderContacts(); state.page = 0; renderThread();
+  }
+  function clearAll() {
+    state.selectedAddrs.clear();
+    renderContacts(); state.page = 0; renderThread();
+  }
+  function updateSelectionCount() {
+    const total = Object.keys(state.backup.contacts || {}).length;
+    document.getElementById('selection-count').textContent = state.selectedAddrs.size + ' of ' + total + ' selected';
+    const btn = document.getElementById('btn-view-thread');
+    const evs = currentlyFiltered().length;
+    btn.textContent = 'View thread (' + evs + ' events)';
+    btn.disabled = state.selectedAddrs.size === 0;
   }
 
+  // ----- Thread filtering -----
+  function passesKind(e) {
+    if (state.kindFilter === 'all') return true;
+    if (state.kindFilter === 'sms') return e.kind === 'sms' || e.kind === 'mms';
+    if (state.kindFilter === 'call') return e.kind === 'call';
+    return true;
+  }
+  function passesDirection(e) {
+    if (state.directionFilter === 'all') return true;
+    if (e.kind === 'call') {
+      // Outgoing calls type=2; incoming type=1; missed/rejected/blocked are received-side.
+      if (state.directionFilter === 'out') return e.type === 2;
+      if (state.directionFilter === 'in') return e.type !== 2;
+      return true;
+    }
+    if (state.directionFilter === 'out') return isSent(e);
+    if (state.directionFilter === 'in') return !isSent(e);
+    return true;
+  }
+  function passesDate(e) {
+    if (state.dateFrom != null && e.date < state.dateFrom) return false;
+    if (state.dateTo != null && e.date > state.dateTo) return false;
+    return true;
+  }
+  function passesBody(e) {
+    if (!state.bodySearch) return true;
+    if (e.kind === 'call') return false;  // calls have no body to search
+    return (e.body || '').toLowerCase().includes(state.bodySearch);
+  }
+  function currentlyFiltered() {
+    return (state.backup.events || []).filter(e =>
+      state.selectedAddrs.has(e.addr) && passesKind(e) && passesDirection(e) && passesDate(e) && passesBody(e)
+    );
+  }
+
+  // ----- Thread render -----
   function renderThread() {
     const thread = document.getElementById('thread');
     const pager = document.getElementById('pager');
-    if (!state.currentAddr) {
-      thread.innerHTML = '<div class="thread-empty">Select a contact to view their thread.</div>';
+    const meta = document.getElementById('thread-meta');
+    const events = currentlyFiltered();
+
+    meta.textContent = events.length + ' events from ' + state.selectedAddrs.size + ' contact' +
+      (state.selectedAddrs.size === 1 ? '' : 's') +
+      (state.kindFilter !== 'all' || state.directionFilter !== 'all' || state.bodySearch || state.dateFrom || state.dateTo
+        ? ' (filtered)' : '');
+
+    if (events.length === 0) {
+      thread.innerHTML = '<div class="thread-empty">' +
+        (state.selectedAddrs.size === 0 ? 'No contacts selected. Tick contacts on the left to see their events.'
+                                        : 'No events match the current filters.') + '</div>';
       pager.style.display = 'none';
+      updateSelectionCount();
       return;
     }
-    const events = (state.backup.events || []).filter(e => {
-      if (e.addr !== state.currentAddr) return false;
-      if (state.filter === 'sms') return e.kind === 'sms' || e.kind === 'mms';
-      if (state.filter === 'call') return e.kind === 'call';
-      return true;
-    });
-    const pageSize = state.filter === 'call' ? PAGE_SIZE_CALL : PAGE_SIZE_MSG;
-    const totalPages = Math.max(1, Math.ceil(events.length / pageSize));
+
+    const totalPages = Math.max(1, Math.ceil(events.length / PAGE_SIZE));
     if (state.page >= totalPages) state.page = totalPages - 1;
-    const start = state.page * pageSize;
-    const slice = events.slice(start, start + pageSize);
+    const start = state.page * PAGE_SIZE;
+    const slice = events.slice(start, start + PAGE_SIZE);
+    const showContactTag = state.selectedAddrs.size > 1;
+
     thread.innerHTML = '';
     let lastDay = null;
     for (const e of slice) {
@@ -206,11 +383,9 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
         thread.appendChild(sep);
         lastDay = day;
       }
-      thread.appendChild(renderEvent(e));
+      thread.appendChild(renderEvent(e, showContactTag));
     }
-    if (slice.length === 0) {
-      thread.innerHTML = '<div class="thread-empty">No events for this filter.</div>';
-    }
+
     if (totalPages > 1) {
       pager.style.display = 'block';
       pager.innerHTML = '';
@@ -228,47 +403,130 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
     } else {
       pager.style.display = 'none';
     }
+    updateSelectionCount();
   }
 
-  function renderEvent(e) {
+  function renderEvent(e, showContactTag) {
     if (e.kind === 'call') {
       const div = document.createElement('div');
       const kind = callKind(e.type);
       div.className = 'call-entry ' + kind;
-      const dur = (kind === 'missed' || kind === 'rejected') ? '' : ' · ' + fmtDuration(e.duration_sec || 0);
-      div.innerHTML = '<div class="label">📞 ' + kind.charAt(0).toUpperCase() + kind.slice(1) + ' call' + dur + '</div>' +
+      const dur = (kind === 'missed' || kind === 'rejected' || kind === 'blocked')
+        ? '' : ' · ' + fmtDuration(e.duration_sec || 0);
+      const tag = showContactTag ? ' — ' + escapeHtml(nameFor(e.addr)) : '';
+      div.innerHTML = '<div class="label">📞 ' + kind.charAt(0).toUpperCase() + kind.slice(1) + ' call' + dur + tag + '</div>' +
         '<div>' + fmtDate(e.date) + '</div>';
       return div;
     }
-    const sent = e.type === 2;
+    const sent = isSent(e);
     const div = document.createElement('div');
     div.className = 'message ' + (sent ? 'sent' : 'received');
+    if (showContactTag) {
+      const tag = document.createElement('div');
+      tag.className = 'contact-tag';
+      tag.textContent = (sent ? 'You → ' : '') + nameFor(e.addr);
+      div.appendChild(tag);
+    }
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     bubble.textContent = e.body || '';
+    div.appendChild(bubble);
     const ts = document.createElement('div');
     ts.className = 'timestamp';
     ts.textContent = new Date(e.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const wrap = document.createElement('div');
-    wrap.appendChild(bubble);
-    wrap.appendChild(ts);
-    div.appendChild(wrap);
+    div.appendChild(ts);
     return div;
   }
 
-  document.getElementById('search').addEventListener('input', e => renderContacts(e.target.value));
+  // ----- Export TXT -----
+  function exportTxt() {
+    const events = currentlyFiltered();
+    const lines = [];
+    lines.push('SimpleBackup export — ' + new Date().toISOString());
+    lines.push('Device: ' + (state.backup.device_phone || 'unknown'));
+    lines.push('Selected contacts: ' + Array.from(state.selectedAddrs).map(nameFor).join(', '));
+    lines.push('Filters: kind=' + state.kindFilter + ' direction=' + state.directionFilter +
+      (state.dateFrom ? ' from=' + new Date(state.dateFrom).toISOString().slice(0, 10) : '') +
+      (state.dateTo ? ' to=' + new Date(state.dateTo).toISOString().slice(0, 10) : '') +
+      (state.bodySearch ? ' search="' + state.bodySearch + '"' : ''));
+    lines.push('Events: ' + events.length);
+    lines.push(''.padEnd(70, '-'));
+    for (const e of events) {
+      const ts = new Date(e.date).toISOString().replace('T', ' ').slice(0, 19);
+      const who = nameFor(e.addr) + ' (' + e.addr + ')';
+      if (e.kind === 'call') {
+        const kind = callKind(e.type);
+        const dur = (kind === 'missed' || kind === 'rejected' || kind === 'blocked')
+          ? '' : ' ' + fmtDuration(e.duration_sec || 0);
+        lines.push(ts + '  CALL  ' + who + ' — ' + kind + dur);
+      } else {
+        const dir = isSent(e) ? 'SENT' : 'RECV';
+        lines.push(ts + '  ' + dir + '  ' + who);
+        lines.push((e.body || '').split('\n').map(l => '    ' + l).join('\n'));
+      }
+      lines.push('');
+    }
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'backup-export-' + new Date().toISOString().slice(0, 10) + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 0);
+  }
+
+  // ----- Wire up -----
+  document.getElementById('search-contacts').addEventListener('input', renderContacts);
+  document.getElementById('btn-select-all').addEventListener('click', selectAll);
+  document.getElementById('btn-clear-all').addEventListener('click', clearAll);
+  document.getElementById('btn-view-thread').addEventListener('click', () => {
+    document.querySelector('.app').classList.add('thread-active');
+  });
   document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
     document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
     c.classList.add('active');
-    state.filter = c.dataset.kind;
+    state.kindFilter = c.dataset.kind;
     state.page = 0;
     renderThread();
   }));
+  document.querySelectorAll('.dir-btn').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.dir-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.directionFilter = b.dataset.dir;
+    state.page = 0;
+    renderThread();
+  }));
+  document.getElementById('date-from').addEventListener('change', e => {
+    state.dateFrom = e.target.value ? new Date(e.target.value + 'T00:00:00').getTime() : null;
+    state.page = 0; renderThread();
+  });
+  document.getElementById('date-to').addEventListener('change', e => {
+    state.dateTo = e.target.value ? new Date(e.target.value + 'T23:59:59.999').getTime() : null;
+    state.page = 0; renderThread();
+  });
+  document.getElementById('btn-clear-dates').addEventListener('click', () => {
+    document.getElementById('date-from').value = '';
+    document.getElementById('date-to').value = '';
+    state.dateFrom = null; state.dateTo = null;
+    state.page = 0; renderThread();
+  });
+  document.getElementById('search-body').addEventListener('input', e => {
+    state.bodySearch = (e.target.value || '').toLowerCase();
+    state.page = 0; renderThread();
+  });
+  document.getElementById('filter-toggle').addEventListener('click', () => {
+    document.getElementById('filter-panel').classList.toggle('show');
+  });
   document.getElementById('back-btn').addEventListener('click', () => {
     document.querySelector('.app').classList.remove('thread-active');
   });
+  document.getElementById('btn-print').addEventListener('click', () => window.print());
+  document.getElementById('btn-print-mobile').addEventListener('click', () => window.print());
+  document.getElementById('btn-export').addEventListener('click', exportTxt);
+  document.getElementById('btn-export-mobile').addEventListener('click', exportTxt);
 
-  renderContacts('');
+  renderContacts();
+  renderThread();
 })();
 </script>
 </body>
