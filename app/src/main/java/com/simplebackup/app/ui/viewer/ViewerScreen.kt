@@ -1,6 +1,8 @@
 package com.simplebackup.app.ui.viewer
 
+import android.app.Activity
 import android.util.Log
+import android.view.ViewGroup
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -74,11 +76,23 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
             if (f != null) {
                 AndroidView(
                     factory = { ctx ->
+                        var webViewHolder: WebView? = null
                         WebView(ctx).apply {
+                            webViewHolder = this
+                            // Explicit MATCH_PARENT so the WebView's container size is
+                            // unambiguous — without this, `100%` heights inside the page
+                            // can resolve to 0 and collapse the grid layout.
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
                             settings.javaScriptEnabled = true
                             settings.allowFileAccess = true
                             settings.useWideViewPort = true
-                            settings.loadWithOverviewMode = true
+                            // Keep `loadWithOverviewMode` off — the page is mobile-aware
+                            // via the viewport meta, and overview mode can squash the
+                            // page into a small region in some WebView builds.
+                            settings.loadWithOverviewMode = false
                             settings.domStorageEnabled = true
                             webChromeClient = object : WebChromeClient() {
                                 override fun onConsoleMessage(m: ConsoleMessage): Boolean {
@@ -92,7 +106,22 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
                                     return true
                                 }
                             }
-                            loadUrl("file://${f.absolutePath}")
+                            // Bridge for Print + Export TXT — WebView doesn't implement
+                            // window.print() or <a download>, so the page calls these
+                            // methods on `window.AndroidBridge` when present.
+                            (ctx as? Activity)?.let { activity ->
+                                addJavascriptInterface(
+                                    WebViewBridge(
+                                        activity = activity,
+                                        webViewRef = { webViewHolder },
+                                        cacheDir = activity.cacheDir,
+                                        authority = "${activity.packageName}.fileprovider"
+                                    ),
+                                    WebViewBridge.NAME
+                                )
+                            }
+                            // Use toURI() so paths with `+` or spaces are URL-encoded.
+                            loadUrl(f.toURI().toString())
                         }
                     },
                     modifier = Modifier.fillMaxSize()

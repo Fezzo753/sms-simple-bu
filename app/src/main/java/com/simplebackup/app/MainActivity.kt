@@ -67,10 +67,9 @@ private fun AppNavHost(startDestination: String) {
             HomeScreen(
                 onEditContacts = { nav.navigate(Routes.PICKER) },
                 onView = { nav.navigate(Routes.VIEWER) },
-                onShare = {
+                onShare = { devicePhone ->
                     val activity = context as? Activity ?: return@HomeScreen
-                    val phone = container.resolveDevicePhone(null)
-                    val file = File(container.filesDir, "Backup_${phone}.html")
+                    val file = File(container.filesDir, "Backup_${devicePhone}.html")
                     shareBackup(activity, file)
                 },
                 onSettings = { nav.navigate(Routes.SETTINGS) }
