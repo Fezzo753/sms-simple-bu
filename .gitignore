@@ -1,6 +1,6 @@
-# Personal SMS data — never commit
-*.xml
-*.zip
+# Personal SMS data — never commit (root-only XML/zip)
+/*.xml
+/*.zip
 jay/
 sms_viewer_output/
 
