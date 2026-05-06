@@ -137,6 +137,36 @@ class ViewerTemplateTest {
         assertThat(template).contains("type: 'text/plain'")
     }
 
+    // ---- WebView render robustness ----
+
+    @Test fun `app container uses 100 percent height not 100vh`() {
+        // 100vh in Android WebView can resolve to 0 when the WebView's LayoutParams aren't
+        // explicit, collapsing the grid layout. Use 100% relative to html/body instead.
+        val rule = Regex("""\.app\s*\{[^}]*}""")
+            .find(template)?.value
+            ?: error("no .app rule in template")
+        assertThat(rule).contains("height: 100%")
+        assertThat(rule).doesNotContain("height: 100vh")
+    }
+
+    @Test fun `html and body lock overflow to prevent layout collapse`() {
+        // Matches the legacy SMS_Viewer.html approach — html/body with overflow hidden so
+        // panes can scroll independently and 100% heights resolve deterministically.
+        val rule = Regex("""html,\s*body\s*\{[^}]*}""")
+            .find(template)?.value
+            ?: error("no html, body rule in template")
+        assertThat(rule).contains("overflow: hidden")
+    }
+
+    @Test fun `js error handler surfaces blank-page bugs visibly`() {
+        // A try/catch + showError must wrap the IIFE so a DecompressionStream failure
+        // (or any other JS error) produces a visible message instead of an empty viewer.
+        assertThat(template).contains("function showError(")
+        assertThat(template).contains("addEventListener('error'")
+        assertThat(template).contains("addEventListener('unhandledrejection'")
+        assertThat(template).contains("typeof DecompressionStream === 'undefined'")
+    }
+
     @Test fun `print stylesheet hides chrome`() {
         // @media print rule must hide sidebar/toolbar so the printed page is just the thread.
         assertThat(template).contains("@media print")

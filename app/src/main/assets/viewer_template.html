@@ -20,8 +20,8 @@
   --bubble-sent: #1f6feb;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }
-.app { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: auto 1fr; height: 100vh; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: var(--bg-dark); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }
+.app { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: auto 1fr; height: 100%; }
 .header { grid-column: 1 / -1; padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; background: var(--bg-panel); }
 .header h1 { margin: 0; font-size: 16px; font-weight: 600; flex: 1; }
 .header-stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-dim); }
@@ -198,13 +198,35 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--bg-dark); co
     countsByAddr: new Map()
   };
 
-  // Decompress embedded payload.
-  const payloadEl = document.getElementById('payload');
-  const b64 = payloadEl.textContent.trim();
-  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-  const text = await new Response(stream).text();
-  state.backup = JSON.parse(text);
+  // Surface JS errors visibly so a blank page never looks like the app is broken.
+  function showError(msg, detail) {
+    const thread = document.getElementById('thread');
+    if (thread) {
+      thread.innerHTML = '<div class="thread-empty"><strong>Viewer error</strong><br>' +
+        msg + (detail ? '<br><small>' + detail + '</small>' : '') + '</div>';
+    }
+    console.error('[viewer]', msg, detail || '');
+  }
+  window.addEventListener('error', e => showError('Uncaught error', e.message));
+  window.addEventListener('unhandledrejection', e => showError('Promise rejection', e.reason && e.reason.message));
+
+  try {
+    // Decompress embedded payload.
+    const payloadEl = document.getElementById('payload');
+    const b64 = payloadEl.textContent.trim();
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    if (typeof DecompressionStream === 'undefined') {
+      showError('Your WebView is too old to decode the embedded data.',
+        'Update Android System WebView from the Play Store, then re-open the viewer.');
+      return;
+    }
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const text = await new Response(stream).text();
+    state.backup = JSON.parse(text);
+  } catch (e) {
+    showError('Failed to load backup data', e && e.message);
+    return;
+  }
 
   // Compute per-contact event counts once.
   for (const e of state.backup.events || []) {

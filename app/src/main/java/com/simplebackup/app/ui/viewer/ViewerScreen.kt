@@ -1,6 +1,13 @@
 package com.simplebackup.app.ui.viewer
 
+import android.util.Log
+import android.view.ViewGroup
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,11 +79,45 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
                 AndroidView(
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            // Explicit MATCH_PARENT so the WebView's height is unambiguous —
+                            // without this, some configurations leave 100vh / 100% resolving
+                            // to 0, which collapses the inner grid layout.
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
                             settings.javaScriptEnabled = true
                             settings.allowFileAccess = true
                             settings.useWideViewPort = true
-                            settings.loadWithOverviewMode = true
+                            settings.loadWithOverviewMode = false
                             settings.domStorageEnabled = true
+                            // Pipe JS console + page errors to Logcat so blank-page bugs are diagnosable.
+                            webChromeClient = object : WebChromeClient() {
+                                override fun onConsoleMessage(msg: ConsoleMessage): Boolean {
+                                    Log.println(
+                                        when (msg.messageLevel()) {
+                                            ConsoleMessage.MessageLevel.ERROR -> Log.ERROR
+                                            ConsoleMessage.MessageLevel.WARNING -> Log.WARN
+                                            else -> Log.DEBUG
+                                        },
+                                        "ViewerWebView",
+                                        "${msg.sourceId()}:${msg.lineNumber()} — ${msg.message()}"
+                                    )
+                                    return true
+                                }
+                            }
+                            webViewClient = object : WebViewClient() {
+                                override fun onReceivedError(
+                                    view: WebView?,
+                                    request: WebResourceRequest?,
+                                    error: WebResourceError?
+                                ) {
+                                    Log.e(
+                                        "ViewerWebView",
+                                        "load error: ${error?.description} for ${request?.url}"
+                                    )
+                                }
+                            }
                             loadUrl("file://${f.absolutePath}")
                         }
                     },
