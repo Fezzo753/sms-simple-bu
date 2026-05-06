@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- viewer-template-version: 3 -->
+<!-- viewer-template-version: 4 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -207,7 +207,12 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
       dateTo: null,    // ms (end of day)
       bodySearch: '',
       page: 0,
-      countsByAddr: new Map()
+      countsByAddr: new Map(),
+      // When true, renderThread emits every filtered event into the DOM
+      // without pagination. Used for Print so the captured PDF includes
+      // every event, not just the current paginated page. Restored when
+      // the bridge fires window.__onPrintFinished.
+      printing: false
     };
 
     // Decompress embedded payload, with a graceful fallback for WebViews that
@@ -388,10 +393,11 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
       return;
     }
 
-    const totalPages = Math.max(1, Math.ceil(events.length / PAGE_SIZE));
+    const noPaginate = state.printing;
+    const totalPages = noPaginate ? 1 : Math.max(1, Math.ceil(events.length / PAGE_SIZE));
     if (state.page >= totalPages) state.page = totalPages - 1;
-    const start = state.page * PAGE_SIZE;
-    const slice = events.slice(start, start + PAGE_SIZE);
+    const start = noPaginate ? 0 : state.page * PAGE_SIZE;
+    const slice = noPaginate ? events : events.slice(start, start + PAGE_SIZE);
     const showContactTag = state.selectedAddrs.size > 1;
 
     thread.innerHTML = '';
@@ -408,7 +414,7 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
       thread.appendChild(renderEvent(e, showContactTag));
     }
 
-    if (totalPages > 1) {
+    if (!noPaginate && totalPages > 1) {
       pager.style.display = 'block';
       pager.innerHTML = '';
       const prev = document.createElement('button');
@@ -523,12 +529,37 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
   }
 
   function doPrint() {
+    // Pull the entire filtered event list into the DOM before handing the
+    // WebView to PrintManager. The system print adapter reads the WebView's
+    // current state when its onLayout/onWrite callbacks fire (asynchronously,
+    // after the user picks a printer), so we keep the DOM unpaginated until
+    // onFinish fires through window.__onPrintFinished.
+    state.printing = true;
+    renderThread();
+    // Force a synchronous layout so the WebView's measured height already
+    // reflects every event before the print dialog appears.
+    void document.body.offsetHeight;
+
     if (isInApp()) {
       window.AndroidBridge.print();
       return;
     }
+    // Browser path: window.print() is synchronous-ish (blocks the UI thread
+    // until the dialog closes). After it returns the dialog is gone, so we
+    // can repaginate immediately.
     window.print();
+    state.printing = false;
+    renderThread();
   }
+
+  // Bridge calls this from native PrintDocumentAdapter.onFinish — i.e. when
+  // the user has saved the PDF or cancelled the print sheet. Until that
+  // moment the unpaginated DOM stays in place so PrintManager can capture it.
+  window.__onPrintFinished = function() {
+    if (!state.printing) return;
+    state.printing = false;
+    renderThread();
+  };
 
   // ----- Wire up -----
   document.getElementById('search-contacts').addEventListener('input', renderContacts);
