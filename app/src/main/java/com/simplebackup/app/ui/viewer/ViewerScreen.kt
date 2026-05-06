@@ -1,5 +1,8 @@
 package com.simplebackup.app.ui.viewer
 
+import android.util.Log
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -47,8 +50,8 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
     LaunchedEffect(Unit) {
         val s = withContext(Dispatchers.IO) { container.settings.current() }
         val devicePhone = container.resolveDevicePhone(s.phoneOverride)
-        val f = File(container.filesDir, "Backup_${devicePhone}.html")
-        htmlFile = if (f.exists()) f else null
+        val f = withContext(Dispatchers.IO) { container.regenerateHtmlIfStale(devicePhone) }
+        htmlFile = f?.takeIf { it.exists() }
         resolved = true
     }
 
@@ -77,6 +80,18 @@ fun ViewerScreen(onBack: () -> Unit = {}) {
                             settings.useWideViewPort = true
                             settings.loadWithOverviewMode = true
                             settings.domStorageEnabled = true
+                            webChromeClient = object : WebChromeClient() {
+                                override fun onConsoleMessage(m: ConsoleMessage): Boolean {
+                                    val tag = "SimpleBackupViewer"
+                                    val line = "${m.message()} (src=${m.sourceId()}:${m.lineNumber()})"
+                                    when (m.messageLevel()) {
+                                        ConsoleMessage.MessageLevel.ERROR -> Log.e(tag, line)
+                                        ConsoleMessage.MessageLevel.WARNING -> Log.w(tag, line)
+                                        else -> Log.d(tag, line)
+                                    }
+                                    return true
+                                }
+                            }
                             loadUrl("file://${f.absolutePath}")
                         }
                     },
