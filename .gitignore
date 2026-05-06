@@ -1,9 +1,3 @@
-# Personal SMS data — never commit (root-only XML/zip)
-/*.xml
-/*.zip
-jay/
-sms_viewer_output/
-
 # Claude Code local state
 .claude/
 
