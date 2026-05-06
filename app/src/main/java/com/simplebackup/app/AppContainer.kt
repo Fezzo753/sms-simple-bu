@@ -45,9 +45,9 @@ class AppContainer(private val app: Application) {
         filesDir = filesDir,
         devicePhone = devicePhone,
         readers = Readers(
-            sms = SmsReader(resolver)::read,
-            mms = MmsReader(resolver)::read,
-            calls = CallReader(resolver)::read
+            sms = { addrs, onProgress -> SmsReader(resolver).read(addrs, onProgress) },
+            mms = { addrs, onProgress -> MmsReader(resolver).read(addrs, onProgress) },
+            calls = { addrs, onProgress -> CallReader(resolver).read(addrs, onProgress) }
         ),
         contactNames = contactNames,
         htmlGenerator = htmlGenerator,
