@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -34,12 +35,12 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         timeZone = TimeZone.getTimeZone("UTC")
     }
 
-    fun load() = viewModelScope.launch(Dispatchers.IO) {
-        val s = container.settings.current()
+    fun load() = viewModelScope.launch {
+        val app = getApplication<Application>()
         val versionName = runCatching {
-            getApplication<Application>().packageManager
-                .getPackageInfo(getApplication<Application>().packageName, 0).versionName ?: "0.1.0"
+            app.packageManager.getPackageInfo(app.packageName, 0).versionName ?: "0.1.0"
         }.getOrDefault("0.1.0")
+        val s = withContext(Dispatchers.IO) { container.settings.current() }
         _state.value = SettingsUiState(
             phoneOverride = s.phoneOverride,
             fromDateMs = s.fromDateMs,
@@ -49,12 +50,14 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun save(phoneOverride: String?, fromDateText: String?, onDone: () -> Unit) =
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val parsedFromDate = fromDateText
                 ?.takeIf { it.isNotBlank() }
                 ?.let { runCatching { dateFmt.parse(it)?.time }.getOrNull() }
-            container.settings.update {
-                it.copy(phoneOverride = phoneOverride, fromDateMs = parsedFromDate)
+            withContext(Dispatchers.IO) {
+                container.settings.update {
+                    it.copy(phoneOverride = phoneOverride, fromDateMs = parsedFromDate)
+                }
             }
             onDone()
         }
