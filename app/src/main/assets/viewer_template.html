@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- viewer-template-version: 4 -->
+<!-- viewer-template-version: 5 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -104,10 +104,15 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
 }
 
 @media print {
+  /* Undo the screen-layout clipping. Without these, html/body keep
+     `height: 100%; overflow: hidden` from the global rule, the WebView
+     measures body as viewport-height, and only one page worth of events
+     ends up in the PDF. */
+  html, body { height: auto !important; overflow: visible !important; }
   .sidebar, .toolbar, .filter-panel, .pager, .header-actions, .thread-meta { display: none !important; }
-  .app { display: block; height: auto; }
+  .app { display: block; height: auto !important; }
   .header { border-bottom: 2px solid #000; }
-  .main, .thread { display: block; overflow: visible; height: auto; }
+  .main, .thread { display: block; overflow: visible !important; height: auto !important; }
   body { background: #fff; color: #000; font-size: 11pt; }
   .bubble { border: 1px solid #ccc; max-width: 100%; }
   .message.sent .bubble { background: #e7f0ff; color: #000; }
