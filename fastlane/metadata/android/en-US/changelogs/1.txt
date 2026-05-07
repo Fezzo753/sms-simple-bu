@@ -1,0 +1,6 @@
+First public build.
+
+* Pick contacts and back up SMS, MMS bodies, and call entries.
+* Single self-viewable HTML output with search, filters, multi-contact selection, Print PDF, Export TXT.
+* Merges new events into the existing backup on subsequent runs.
+* Fully offline — no network access at all.

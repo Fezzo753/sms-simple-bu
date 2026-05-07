@@ -62,3 +62,16 @@ Design and implementation plan live in `docs/plans/`.
 ## Legacy desktop tool
 
 The original Python desktop converter (`sms_processor.py`) for the SMS Backup & Restore XML format lives in `legacy/`. It's still functional and can be used as a fallback; the new Android app supersedes it for capture-from-device workflows.
+
+## Distribution
+
+Sideload only — no Play Store. SMS-capable apps need a Play Permissions Declaration review which this project intentionally avoids.
+
+- Signed APK on each release: <https://github.com/Fezzo753/sms-simple-bu/releases>
+- IzzyOnDroid F-Droid repo (after submission): `https://apt.izzysoft.de/fdroid/repo` — see [`docs/PUBLISHING-IZZY.md`](docs/PUBLISHING-IZZY.md)
+
+Google Play Protect will warn at install for any sideloaded SMS app. Tap "More details" → "Install anyway".
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
