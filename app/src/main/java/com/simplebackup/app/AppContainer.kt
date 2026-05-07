@@ -106,6 +106,6 @@ class AppContainer(private val app: Application) {
     private companion object {
         // Bump this when the template asset changes so that existing on-device
         // backup HTMLs get regenerated on the next viewer open.
-        const val CURRENT_TEMPLATE_SENTINEL = "viewer-template-version: 4"
+        const val CURRENT_TEMPLATE_SENTINEL = "viewer-template-version: 5"
     }
 }
