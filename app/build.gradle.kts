@@ -6,10 +6,10 @@ plugins {
 }
 
 android {
-    namespace = "com.simplebackup.app"
+    namespace = "com.sms_export_viewer"
     compileSdk = 34
     defaultConfig {
-        applicationId = "com.simplebackup.app"
+        applicationId = "com.sms_export_viewer"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
