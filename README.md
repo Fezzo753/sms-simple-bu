@@ -67,7 +67,6 @@ The original Python desktop converter (`sms_processor.py`) for the SMS Backup & 
 
 - Google Play Store: app is approved.
 - Signed APK on each release: <https://github.com/Fezzo753/sms-simple-bu/releases>
-- IzzyOnDroid F-Droid repo (after submission): `https://apt.izzysoft.de/fdroid/repo` — see [`docs/PUBLISHING-IZZY.md`](docs/PUBLISHING-IZZY.md)
 
 ## License
 
