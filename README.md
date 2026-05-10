@@ -63,11 +63,6 @@ Design and implementation plan live in `docs/plans/`.
 
 The original Python desktop converter (`sms_processor.py`) for the SMS Backup & Restore XML format lives in `legacy/`. It's still functional and can be used as a fallback; the new Android app supersedes it for capture-from-device workflows.
 
-## Distribution
-
-- Google Play Store: app is approved.
-- Signed APK on each release: <https://github.com/Fezzo753/sms-simple-bu/releases>
-
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
