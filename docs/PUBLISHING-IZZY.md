@@ -1,6 +1,6 @@
 # Publishing to IzzyOnDroid
 
-IzzyOnDroid is a third-party F-Droid repository run by Izzy ([@IzzySoft](https://github.com/IzzySoft)). It hosts the GitHub-Releases-signed APK directly (no rebuild on F-Droid's infrastructure), so updates show up in users' F-Droid clients shortly after each GitHub Release.
+IzzyOnDroid is a third-party F-Droid repository run by Izzy ([@IzzySoft](https://github.com/IzzySoft)). It hosts the GitHub-Releases-signed APK directly (no rebuild on F-Droid's infrastructure), so updates show up in users' F-Droid clients shortly after each GitHub Release. Useful as a distribution channel alongside the Google Play listing, for users who prefer F-Droid clients or want a non-Play update path.
 
 ## Prerequisites
 
@@ -40,7 +40,3 @@ If the package name or signing key ever changes, treat it as a new app — Izzy 
 1. Install F-Droid client from <https://f-droid.org>.
 2. Open F-Droid → Settings → Repositories → `+` → enter `https://apt.izzysoft.de/fdroid/repo`.
 3. Update repos. SimpleBackup will appear under search.
-
-## Why not F-Droid main?
-
-F-Droid main builds from source on its own infrastructure and signs with its own key. It's the canonical FOSS Android store but the review queue can take weeks to months. IzzyOnDroid is faster and well-trusted; many apps live in both. Submitting to F-Droid main later is a separate process — see <https://f-droid.org/docs/Submitting_to_F-Droid_Quick_Start_Guide/>.

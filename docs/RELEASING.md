@@ -1,8 +1,6 @@
 # Releasing SimpleBackup
 
-SimpleBackup is sideload-only. Releases are signed APKs attached to GitHub Releases. Users download the APK, enable "Install unknown apps" for their browser/file manager, and tap to install.
-
-There is no Play Store release path — the SMS/Call Log permissions that this app needs are subject to Google's Permissions Declaration review, which the app intentionally avoids.
+This guide covers cutting a signed APK release and attaching it to a GitHub Release. Play Store releases live in their own track and aren't covered here.
 
 ## One-time setup
 

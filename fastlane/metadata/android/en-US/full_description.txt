@@ -21,7 +21,6 @@ Everything runs entirely on-device. No network access, no analytics, no cloud sy
 
 * No restore. The exported JSON is structured so a future tool could restore, but this app only captures.
 * MMS image / video media is captured as a "[image]" or "[video]" placeholder in v0.1; only text bodies survive.
-* Sideload only. Not on Play Store. Google Play Protect may warn at install — this is normal for SMS-capable apps outside Play; tap "Install anyway" or "More details" → "Install".
 
 <b>Why a separate app</b>
 

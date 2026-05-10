@@ -65,12 +65,9 @@ The original Python desktop converter (`sms_processor.py`) for the SMS Backup & 
 
 ## Distribution
 
-Sideload only — no Play Store. SMS-capable apps need a Play Permissions Declaration review which this project intentionally avoids.
-
+- Google Play Store: app is approved.
 - Signed APK on each release: <https://github.com/Fezzo753/sms-simple-bu/releases>
 - IzzyOnDroid F-Droid repo (after submission): `https://apt.izzysoft.de/fdroid/repo` — see [`docs/PUBLISHING-IZZY.md`](docs/PUBLISHING-IZZY.md)
-
-Google Play Protect will warn at install for any sideloaded SMS app. Tap "More details" → "Install anyway".
 
 ## License
 
